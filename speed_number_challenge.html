@@ -126,7 +126,7 @@
         <div class="mb-2">
             <a href="index.htm"
                 class="text-[10px] text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest font-bold">
-                ← Back to Hub
+                ← Volver al Inicio
             </a>
         </div>
 
@@ -134,19 +134,19 @@
         <div class="flex items-center gap-2 mb-3">
             <div class="flex-[1.2] flex bg-slate-800 p-1 rounded-xl border border-slate-700 h-10">
                 <button id="diff-easy"
-                    class="difficulty-btn flex-1 text-[10px] font-bold rounded-lg transition-all text-slate-400">EASY
+                    class="difficulty-btn active flex-1 text-[10px] font-bold rounded-lg transition-all text-slate-400">FÁCIL
                     (9)</button>
                 <button id="diff-standard"
-                    class="difficulty-btn active flex-1 text-[10px] font-bold rounded-lg transition-all text-slate-400">STD
+                    class="difficulty-btn flex-1 text-[10px] font-bold rounded-lg transition-all text-slate-400">ESTÁNDAR
                     (25)</button>
             </div>
             <div class="flex-1">
                 <select id="mode-select"
                     class="w-full h-10 bg-slate-800 border border-slate-700 text-white rounded-xl px-2 text-[10px] font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer">
-                    <option value="sequential">SEQUENTIAL</option>
-                    <option value="odd">ODD NUMBERS</option>
-                    <option value="even">EVEN NUMBERS</option>
-                    <option value="prime">PRIMES</option>
+                    <option value="sequential">SECUENCIAL</option>
+                    <option value="odd">IMPARES</option>
+                    <option value="even">PARES</option>
+                    <option value="prime">PRIMOS</option>
                 </select>
             </div>
         </div>
@@ -157,22 +157,22 @@
                 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 mb-0">
                 SPEED NUMBER
             </h1>
-            <p id="mode-description" class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Find numbers
-                in sequence!</p>
+            <p id="mode-description" class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">¡Busca los
+                números en orden!</p>
         </div>
 
         <!-- Stats -->
         <div class="stats-card rounded-2xl p-3 mb-4 flex justify-between items-center">
             <div>
-                <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Target</p>
+                <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Objetivo</p>
                 <p id="next-num" class="text-xl font-black text-blue-400 leading-tight">--</p>
             </div>
             <div class="text-center">
-                <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Time</p>
+                <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Tiempo</p>
                 <p id="timer" class="text-2xl font-mono font-bold text-white leading-tight">0.00s</p>
             </div>
             <div class="text-right">
-                <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Best</p>
+                <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Récord</p>
                 <p id="best-time" class="text-xl font-bold text-emerald-400 leading-tight">--</p>
             </div>
         </div>
@@ -189,10 +189,10 @@
                 class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/95 rounded-2xl backdrop-blur-md transition-all duration-300">
                 <div id="countdown-display" class="hidden text-7xl font-black text-white mb-4"></div>
                 <div id="menu-content" class="flex flex-col items-center">
-                    <h2 id="overlay-title" class="text-xl font-bold mb-4">Ready?</h2>
+                    <h2 id="overlay-title" class="text-xl font-bold mb-4">¿Lista?</h2>
                     <button id="start-btn"
                         class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-900/40 transition-all hover:scale-105 active:scale-95">
-                        START GAME
+                        ¡A JUGAR!
                     </button>
                 </div>
             </div>
@@ -207,7 +207,7 @@
 
     <script>
         // Game State
-        let gridSize = 25;
+        let gridSize = 9;
         let currentSequence = [];
         let nextIndex = 0;
         let startTime = null;
@@ -408,8 +408,8 @@
                 updateBestDisplay();
             }
 
-            overlayTitleEl.innerHTML = `<span class="text-emerald-400">Fantastic!</span><br><span class="text-white text-4xl">${finalTime.toFixed(2)}s</span>`;
-            startBtn.textContent = 'PLAY AGAIN';
+            overlayTitleEl.innerHTML = `<span class="text-emerald-400">¡Fantástico!</span><br><span class="text-white text-4xl">${finalTime.toFixed(2)}s</span>`;
+            startBtn.textContent = 'JUGAR DE NUEVO';
             menuContent.classList.remove('hidden');
             overlayEl.style.display = 'flex';
             setTimeout(() => overlayEl.style.opacity = '1', 10);
@@ -428,19 +428,19 @@
                 isGameRunning = false;
                 isCountingDown = false;
             }
-            overlayTitleEl.textContent = 'Ready?';
-            startBtn.textContent = 'START GAME';
+            overlayTitleEl.textContent = '¿Lista?';
+            startBtn.textContent = '¡A JUGAR!';
             menuContent.classList.remove('hidden');
             countdownDisplay.classList.add('hidden');
             overlayEl.style.display = 'flex';
             overlayEl.style.opacity = '1';
 
-            const diffName = gridSize === 9 ? "the first 9" : "the first 25";
+            const diffName = gridSize === 9 ? "los primeros 9" : "los primeros 25";
             const descriptions = {
-                sequential: `Find numbers 1 to ${gridSize} in order.`,
-                odd: `Find ${diffName} odd numbers.`,
-                even: `Find ${diffName} even numbers.`,
-                prime: `Find ${diffName} prime numbers.`
+                sequential: `Busca los números del 1 al ${gridSize} en orden.`,
+                odd: `Busca ${diffName} números impares.`,
+                even: `Busca ${diffName} números pares.`,
+                prime: `Busca ${diffName} números primos.`
             };
             modeDesc.textContent = descriptions[modeSelect.value];
             initBoard();

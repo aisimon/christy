@@ -87,3 +87,60 @@ const hubGames = [
         iconBg: "#4361ee"
     }
 ];
+
+// Achievement System
+function recordGamePlay() {
+    const today = new Date().toISOString().split('T')[0];
+    let playDays = JSON.parse(localStorage.getItem('playDays')) || [];
+
+    if (!playDays.includes(today)) {
+        playDays.push(today);
+        localStorage.setItem('playDays', JSON.stringify(playDays));
+    }
+}
+
+// Auto-record if loaded on a game page (not hub or root)
+(function () {
+    const path = window.location.pathname;
+    const isHub = path.endsWith('index.htm') || path.endsWith('/') || path === '';
+    if (!isHub) {
+        recordGamePlay();
+    }
+})();
+
+function getStats() {
+    const rawDays = JSON.parse(localStorage.getItem('playDays')) || [];
+    const uniqueDays = [...new Set(rawDays)].sort();
+
+    if (uniqueDays.length === 0) return { streak: 0, totalDays: 0, badges: 0 };
+
+    const todayStr = new Date().toISOString().split('T')[0];
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+    const playDaysSet = new Set(uniqueDays);
+
+    // Streak logic: check if played today or yesterday to continue
+    let streak = 0;
+    let checkDate = new Date();
+
+    if (!playDaysSet.has(todayStr)) {
+        if (playDaysSet.has(yesterdayStr)) {
+            checkDate = yesterday;
+        } else {
+            return { streak: 0, totalDays: uniqueDays.length, badges: Math.floor(uniqueDays.length / 3) };
+        }
+    }
+
+    while (playDaysSet.has(checkDate.toISOString().split('T')[0])) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+    }
+
+    return {
+        streak: streak,
+        totalDays: uniqueDays.length,
+        badges: Math.floor(uniqueDays.length / 3)
+    };
+}

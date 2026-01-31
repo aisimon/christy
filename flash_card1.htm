@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Flashcard Adventure</title>
+    <style>
+        :root {
+            --pink-primary: #ff85a2;
+            --pink-dark: #f72585;
+            --warm-bg: #fff5f7;
+            --orange-soft: #f9dcc4;
+            --text-main: #4a4a4a;
+            --card-shadow: 0 12px 24px rgba(255, 133, 162, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--warm-bg);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Top Navigation */
+        .header {
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+
+        select {
+            appearance: none;
+            background-color: white;
+            border: 2px solid var(--pink-primary);
+            border-radius: 12px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            color: var(--pink-dark);
+            font-weight: bold;
+            cursor: pointer;
+            outline: none;
+            box-shadow: 0 4px 0 var(--pink-primary);
+        }
+
+        /* Progress Section */
+        .progress-wrapper {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 30px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 14px;
+            background: #ffe0e9;
+            border-radius: 7px;
+            overflow: hidden;
+            border: 2px solid white;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--pink-primary), var(--pink-dark));
+            width: 0%;
+            transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Card Area */
+        .card-container {
+            width: 100%;
+            max-width: 320px;
+            height: 380px;
+            perspective: 1000px;
+            cursor: pointer;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            width: 100%;
+            height: 100%;
+            background: white;
+            border-radius: 24px;
+            border: 4px solid var(--pink-primary);
+            box-shadow: var(--card-shadow);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+            position: relative;
+            transition: transform 0.1s;
+        }
+
+        .card:active {
+            transform: scale(0.98);
+        }
+
+        .audio-btn {
+            background: var(--pink-primary);
+            border: none;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 var(--pink-dark);
+        }
+
+        .audio-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .audio-btn svg {
+            fill: white;
+            width: 30px;
+            height: 30px;
+        }
+
+        .spanish-word {
+            font-size: 2.8rem;
+            font-weight: 800;
+            color: var(--pink-dark);
+            margin-bottom: 20px;
+        }
+
+        .english-box {
+            border-top: 2px dashed var(--orange-soft);
+            width: 100%;
+            padding-top: 20px;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+        }
+
+        .english-box.revealed {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .english-word {
+            font-size: 1.5rem;
+            color: #888;
+            font-style: italic;
+        }
+
+        /* Controls */
+        .bottom-controls {
+            width: 100%;
+            max-width: 400px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .nav-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .btn-nav {
+            background: var(--pink-dark);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #9d1754;
+            transition: all 0.1s;
+        }
+
+        .btn-nav:disabled {
+            background: #ccc;
+            box-shadow: 0 4px 0 #aaa;
+            cursor: not-allowed;
+        }
+
+        .btn-nav:active:not(:disabled) {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #9d1754;
+        }
+
+        .progress-indicator {
+            font-weight: bold;
+            color: var(--pink-dark);
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .options {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+            color: var(--pink-dark);
+            font-weight: bold;
+        }
+
+        /* End Screen */
+        #end-screen {
+            display: none;
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            border-radius: 32px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: var(--card-shadow);
+            z-index: 10;
+        }
+
+        .encourage-text {
+            font-size: 1.8rem;
+            color: var(--pink-dark);
+            margin-bottom: 25px;
+            font-weight: 900;
+        }
+
+        .scroll-table {
+            max-height: 250px;
+            overflow-y: auto;
+            border: 2px solid var(--orange-soft);
+            border-radius: 16px;
+            margin-bottom: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: var(--orange-soft);
+            padding: 10px;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--warm-bg);
+        }
+
+        .row-es {
+            font-weight: bold;
+            color: var(--pink-dark);
+        }
+
+        #firework-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        /* Animations */
+        @keyframes pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .celebrate {
+            animation: pop 0.5s ease infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="game-view">
+        <div class="header">
+            <select id="setSelector" onchange="loadNewSet()">
+            </select>
+        </div>
+
+        <div class="progress-wrapper">
+            <div class="progress-container">
+                <div id="progressBar" class="progress-bar"></div>
+            </div>
+        </div>
+
+        <div class="card-container" onclick="handleCardClick()">
+            <div class="card">
+                <button class="audio-btn" onclick="playAudio(event)">
+                    <svg viewBox="0 0 24 24">
+                        <path
+                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                    </svg>
+                </button>
+                <div id="esWord" class="spanish-word">Hola</div>
+                <div id="enBox" class="english-box">
+                    <div id="enWord" class="english-word">Hello</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-controls">
+            <div class="nav-group">
+                <button id="prevBtn" class="btn-nav" onclick="changeCard(-1)">Back</button>
+                <div id="progressText" class="progress-indicator">1 / 10</div>
+                <button id="nextBtn" class="btn-nav" onclick="changeCard(1)">Next</button>
+            </div>
+
+            <div class="options-group" style="display: flex; gap: 20px;">
+                <label class="options">
+                    <input type="checkbox" id="shuffleToggle" onchange="initGame()">
+                    Shuffle Cards
+                </label>
+                <label class="options">
+                    <input type="checkbox" id="autoPlayToggle" checked>
+                    Auto-play Audio
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div id="end-screen">
+        <div id="encouragement" class="encourage-text">You did it!</div>
+        <div class="scroll-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Spanish</th>
+                        <th>English</th>
+                    </tr>
+                </thead>
+                <tbody id="resultBody"></tbody>
+            </table>
+        </div>
+        <button class="btn-nav" onclick="resetGame()">Try Again</button>
+    </div>
+
+    <canvas id="firework-canvas"></canvas>
+
+    <script src="data.js"></script>
+    <script>
+        // Data Structure
+
+        let currentDeck = [];
+        let currentIndex = 0;
+        let isRevealed = false;
+
+        // --- Initialization ---
+
+        function initGame() {
+            const selector = document.getElementById('setSelector');
+
+            // Populate selector if empty
+            if (selector.options.length === 0) {
+                for (const key in sets) {
+                    const opt = document.createElement('option');
+                    opt.value = key;
+                    opt.innerHTML = sets[key].title;
+                    selector.appendChild(opt);
+                }
+            }
+
+            const selectedSet = selector.value;
+            const shuffle = document.getElementById('shuffleToggle').checked;
+
+            currentDeck = [...sets[selectedSet].cards];
+            if (shuffle) {
+                currentDeck.sort(() => Math.random() - 0.5);
+            }
+
+            currentIndex = 0;
+            isRevealed = false;
+            updateUI();
+        }
+
+        function loadNewSet() {
+            initGame();
+        }
+
+        // --- Core Logic ---
+
+        function handleCardClick() {
+            isRevealed = true;
+            document.getElementById('enBox').classList.add('revealed');
+        }
+
+        function playAudio(event) {
+            if (event) event.stopPropagation();
+            const word = currentDeck[currentIndex].es;
+
+            // Web Speech API
+            const utterance = new SpeechSynthesisUtterance(word);
+            utterance.lang = 'es-ES';
+            utterance.rate = 0.9; // Slightly slower for kids
+            window.speechSynthesis.speak(utterance);
+        }
+
+        function changeCard(dir) {
+            if (dir === 1 && currentIndex === currentDeck.length - 1) {
+                showEndScreen();
+                return;
+            }
+
+            currentIndex = Math.max(0, Math.min(currentDeck.length - 1, currentIndex + dir));
+            isRevealed = false;
+            updateUI();
+
+            // Auto-play when going to next card
+            if (dir === 1 && document.getElementById('autoPlayToggle').checked) {
+                playAudio();
+            }
+        }
+
+        function updateUI() {
+            const item = currentDeck[currentIndex];
+            const esElem = document.getElementById('esWord');
+            const enElem = document.getElementById('enWord');
+
+            esElem.innerText = item.es;
+            enElem.innerText = item.en;
+            document.getElementById('enBox').classList.remove('revealed');
+
+            // Dynamic Font Sizing
+            if (item.es.length > 35) {
+                esElem.style.fontSize = "1.5rem";
+            } else if (item.es.length > 20) {
+                esElem.style.fontSize = "1.8rem";
+            } else {
+                esElem.style.fontSize = "2.8rem";
+            }
+
+            if (item.en.length > 35) {
+                enElem.style.fontSize = "1.1rem";
+            } else if (item.en.length > 20) {
+                enElem.style.fontSize = "1.3rem";
+            } else {
+                enElem.style.fontSize = "1.5rem";
+            }
+
+            // Progress
+            const total = currentDeck.length;
+            const displayIndex = currentIndex + 1;
+            document.getElementById('progressText').innerText = `${displayIndex} / ${total}`;
+            document.getElementById('progressBar').style.width = `${(displayIndex / total) * 100}%`;
+
+            // Buttons
+            document.getElementById('prevBtn').disabled = currentIndex === 0;
+            document.getElementById('nextBtn').innerText = (currentIndex === total - 1) ? "Finish! 🎉" : "Next";
+        }
+
+        function resetGame() {
+            document.getElementById('end-screen').style.display = 'none';
+            document.getElementById('game-view').style.display = 'block';
+            initGame();
+        }
+
+        // --- End Game & Fireworks ---
+
+        function showEndScreen() {
+            document.getElementById('game-view').style.display = 'none';
+            const endScreen = document.getElementById('end-screen');
+            endScreen.style.display = 'block';
+
+            // Random Praise
+            document.getElementById('encouragement').innerText = praises[Math.floor(Math.random() * praises.length)];
+
+            // Populate Table
+            const tbody = document.getElementById('resultBody');
+            tbody.innerHTML = '';
+            currentDeck.forEach(item => {
+                const row = `<tr><td class="row-es">${item.es}</td><td>${item.en}</td></tr>`;
+                tbody.innerHTML += row;
+            });
+
+            startFireworks();
+            playVictorySound();
+        }
+
+        function playVictorySound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const notes = [523.25, 659.25, 783.99, 1046.50]; // C Major arpeggio
+
+                notes.forEach((freq, i) => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime + i * 0.1);
+                    gain.gain.setValueAtTime(0.1, audioCtx.currentTime + i * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + i * 0.1 + 0.5);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(audioCtx.currentTime + i * 0.1);
+                    osc.stop(audioCtx.currentTime + i * 0.1 + 0.5);
+                });
+            } catch (e) { }
+        }
+
+        function startFireworks() {
+            const canvas = document.getElementById('firework-canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let particles = [];
+            const colors = ['#ff85a2', '#f72585', '#f9dcc4', '#ffffff', '#ffeb3b'];
+
+            class Particle {
+                constructor(x, y, color) {
+                    this.x = x;
+                    this.y = y;
+                    this.color = color;
+                    this.velocity = {
+                        x: (Math.random() - 0.5) * 8,
+                        y: (Math.random() - 0.5) * 8
+                    };
+                    this.alpha = 1;
+                    this.friction = 0.95;
+                }
+
+                draw() {
+                    ctx.globalAlpha = this.alpha;
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y, 3, 0, Math.PI * 2);
+                    ctx.fillStyle = this.color;
+                    ctx.fill();
+                }
+
+                update() {
+                    this.velocity.x *= this.friction;
+                    this.velocity.y *= this.friction;
+                    this.x += this.velocity.x;
+                    this.y += this.velocity.y;
+                    this.alpha -= 0.01;
+                }
+            }
+
+            function createFirework(x, y) {
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                for (let i = 0; i < 40; i++) {
+                    particles.push(new Particle(x, y, color));
+                }
+            }
+
+            let animationFrame;
+            function animate() {
+                ctx.fillStyle = 'rgba(255, 245, 247, 0.2)'; // Fading trail
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                particles.forEach((p, i) => {
+                    if (p.alpha > 0) {
+                        p.update();
+                        p.draw();
+                    } else {
+                        particles.splice(i, 1);
+                    }
+                });
+
+                if (document.getElementById('end-screen').style.display === 'block') {
+                    if (Math.random() < 0.05) {
+                        createFirework(Math.random() * canvas.width, Math.random() * canvas.height * 0.7);
+                    }
+                    animationFrame = requestAnimationFrame(animate);
+                } else {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    cancelAnimationFrame(animationFrame);
+                }
+            }
+            animate();
+        }
+
+        window.onload = initGame;
+        window.onresize = () => {
+            const canvas = document.getElementById('firework-canvas');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        };
+    </script>
+</body>
+
+</html>

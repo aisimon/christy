@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spanish Learning Hub</title>
+    <style>
+        :root {
+            --pink-primary: #ff85a2;
+            --pink-dark: #f72585;
+            --warm-bg: #fff5f7;
+            --orange-soft: #f9dcc4;
+            --text-main: #4a4a4a;
+            --card-shadow: 0 12px 24px rgba(255, 133, 162, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--warm-bg);
+            color: var(--text-main);
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: var(--pink-dark);
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 900;
+        }
+
+        p {
+            color: var(--text-main);
+            font-size: 1.1rem;
+            opacity: 0.8;
+        }
+
+        .hub-container {
+            width: 100%;
+            max-width: 600px;
+            display: grid;
+            gap: 20px;
+        }
+
+        .game-link {
+            background: white;
+            border: 4px solid var(--pink-primary);
+            border-radius: 24px;
+            padding: 25px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-link:hover {
+            transform: translateY(-5px);
+            border-color: var(--pink-dark);
+        }
+
+        .game-link:active {
+            transform: scale(0.98);
+        }
+
+        .icon-box {
+            background: var(--pink-primary);
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .icon-box svg {
+            width: 35px;
+            height: 35px;
+            fill: white;
+        }
+
+        .game-info h2 {
+            margin: 0 0 5px 0;
+            color: var(--pink-dark);
+            font-size: 1.4rem;
+        }
+
+        .game-info p {
+            margin: 0;
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        .badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--orange-soft);
+            color: var(--pink-dark);
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 4px 12px;
+            border-radius: 20px;
+            text-transform: uppercase;
+        }
+
+        /* Coming Soon style */
+        .game-link.disabled {
+            opacity: 0.7;
+            filter: grayscale(0.5);
+            cursor: default;
+            pointer-events: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <h1>¡Hola Christy!</h1>
+        <p>Choose an adventure to start learning Spanish.</p>
+    </header>
+
+    <div class="hub-container">
+        <!-- Flashcard Adventure -->
+        <a href="flash_card1.htm" class="game-link">
+            <div class="badge">Active</div>
+            <div class="icon-box">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M4 6h16v12H4zm0-2a2 2 0 00-2 2v12c0 1.1.9 2 2 2h16a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 4h12v2H6V8zm0 4h8v2H6v-2z" />
+                </svg>
+            </div>
+            <div class="game-info">
+                <h2>Spanish Flashcards</h2>
+                <p>Master vocabulary with interactive cards, audio, and fun fireworks!</p>
+            </div>
+        </a>
+
+        <!-- Placeholder for future expansion -->
+        <div class="game-link disabled">
+            <div class="badge">Coming Soon</div>
+            <div class="icon-box" style="background: #ccc;">
+                <svg viewBox="0 0 24 24">
+                    <path
+                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z" />
+                </svg>
+            </div>
+            <div class="game-info">
+                <h2>Verb Quest</h2>
+                <p>A new way to practice Spanish conjugations. Stay tuned!</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

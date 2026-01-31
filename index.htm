@@ -3,7 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Christy's Learning Hub</title>
     <link rel="stylesheet" href="index.css">
 </head>
@@ -117,7 +117,10 @@
             const pigs = [
                 { id: 1, name: 'Peanut' },
                 { id: 2, name: 'Coco' },
-                { id: 3, name: 'Marshmallow' }
+                { id: 3, name: 'Marshmallow' },
+                { id: 4, name: 'Ginger' },
+                { id: 5, name: 'Rex' },
+                { id: 6, name: 'Daisy' }
             ];
 
             pigs.forEach((pig, index) => {
@@ -231,7 +234,6 @@
             function processCommand(cmd) {
                 if (cmd === "reset") {
                     localStorage.clear();
-                    alert("✨ Memory Wiped! Starting fresh...");
                     window.location.reload();
                 } else if (cmd.startsWith("goto")) {
                     const days = parseInt(cmd.replace("goto", ""));
@@ -249,7 +251,6 @@
                     dates.push(d.toISOString().split('T')[0]);
                 }
                 localStorage.setItem('playDays', JSON.stringify(dates));
-                alert(`🚀 Fast-forwarded to Day ${count}!`);
                 window.location.reload();
             }
         }

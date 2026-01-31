@@ -52,3 +52,38 @@ const praises = [
     "High Five! You finished the set!",
     "Magnífico! Your Spanish is growing!"
 ];
+
+const hubGames = [
+    {
+        title: "Spanish Flashcards",
+        description: "Master vocabulary with interactive cards, audio, and fun fireworks!",
+        badge: "Active",
+        href: "flash_card1.htm",
+        icon: '<path d="M4 6h16v12H4zm0-2a2 2 0 00-2 2v12c0 1.1.9 2 2 2h16a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 4h12v2H6V8zm0 4h8v2H6v-2z" />',
+        iconBg: "var(--pink-primary)"
+    },
+    {
+        title: "Duck Math",
+        description: "Quack your way through times tables in this fun math adventure!",
+        badge: "Math",
+        href: "duck_math_timestable.html",
+        icon: '<path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h-2v-2h2v2zm0-4h-2V7h2v6zm4 4h-2v-2h2v2zm0-4h-2V7h2v6z" />',
+        iconBg: "#4cc9f0"
+    },
+    {
+        title: "Cyber Defender",
+        description: "Protect the galaxy by solving multiplication problems fast!",
+        badge: "Math",
+        href: "times_table_missile.html",
+        icon: '<path d="M13.13 22.19L11.5 18.35L9.87 22.19L11.5 21L13.13 22.19M13 2H10V10H13V2M15.5 12H13V14H15.5C16.33 14 17 14.67 17 15.5V17H19V15.5C19 13.57 17.43 12 15.5 12M7.5 12C5.57 12 4 13.57 4 15.5V17H6V15.5C6 14.67 6.67 14 7.5 14H10V12H7.5Z" />',
+        iconBg: "#7209b7"
+    },
+    {
+        title: "Speed Number",
+        description: "Test your numeric memory and reaction speed in this challenge!",
+        badge: "Speed",
+        href: "speed_number_challenge.html",
+        icon: '<path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm.5-13H11v6l5.25 3.15.75-1.23-4.5-2.67z" />',
+        iconBg: "#4361ee"
+    }
+];

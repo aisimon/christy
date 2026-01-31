@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spanish Learning Hub</title>
+    <title>Christy's Learning Hub</title>
     <style>
         :root {
             --pink-primary: #ff85a2;
@@ -147,43 +147,44 @@
 </head>
 
 <body>
-
     <header>
         <h1>¡Hola Christy!</h1>
-        <p>Choose an adventure to start learning Spanish.</p>
+        <p>Choose an adventure to start learning!</p>
     </header>
 
-    <div class="hub-container">
-        <!-- Flashcard Adventure -->
-        <a href="flash_card1.htm" class="game-link">
-            <div class="badge">Active</div>
-            <div class="icon-box">
-                <svg viewBox="0 0 24 24">
-                    <path
-                        d="M4 6h16v12H4zm0-2a2 2 0 00-2 2v12c0 1.1.9 2 2 2h16a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 4h12v2H6V8zm0 4h8v2H6v-2z" />
-                </svg>
-            </div>
-            <div class="game-info">
-                <h2>Spanish Flashcards</h2>
-                <p>Master vocabulary with interactive cards, audio, and fun fireworks!</p>
-            </div>
-        </a>
-
-        <!-- Placeholder for future expansion -->
-        <div class="game-link disabled">
-            <div class="badge">Coming Soon</div>
-            <div class="icon-box" style="background: #ccc;">
-                <svg viewBox="0 0 24 24">
-                    <path
-                        d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm4.59-12.42L10 14.17l-2.59-2.58L6 13l4 4 8-8z" />
-                </svg>
-            </div>
-            <div class="game-info">
-                <h2>Verb Quest</h2>
-                <p>A new way to practice Spanish conjugations. Stay tuned!</p>
-            </div>
-        </div>
+    <div class="hub-container" id="hub-container">
+        <!-- Rendered Programmatically -->
     </div>
+
+    <script src="data.js"></script>
+    <script>
+        function renderHub() {
+            const container = document.getElementById('hub-container');
+
+            hubGames.forEach(game => {
+                const gameLink = document.createElement('a');
+                gameLink.href = game.href;
+                gameLink.className = 'game-link';
+
+                gameLink.innerHTML = `
+                    <div class="badge">${game.badge}</div>
+                    <div class="icon-box" style="background: ${game.iconBg}">
+                        <svg viewBox="0 0 24 24">
+                            ${game.icon}
+                        </svg>
+                    </div>
+                    <div class="game-info">
+                        <h2>${game.title}</h2>
+                        <p>${game.description}</p>
+                    </div>
+                `;
+
+                container.appendChild(gameLink);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', renderHub);
+    </script>
 
 </body>
 

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speed Number Challenge</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #0f172a;
+            color: white;
+            touch-action: manipulation;
+            overflow: hidden;
+            overscroll-behavior: none;
+            position: fixed;
+            width: 100%;
+            height: 100%;
+        }
+
+        .number-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        /* Dynamic Grid Layouts */
+        .grid-5 {
+            grid-template-columns: repeat(5, 1fr);
+        }
+
+        .grid-3 {
+            grid-template-columns: repeat(3, 1fr);
+        }
+
+        .number-btn {
+            aspect-ratio: 1 / 1;
+            transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 900;
+        }
+
+        .number-btn:active {
+            transform: scale(0.9);
+        }
+
+        .number-btn.correct {
+            opacity: 0;
+            pointer-events: none;
+            transform: scale(0.5);
+        }
+
+        .number-btn.wrong {
+            animation: shake 0.4s ease-in-out;
+            background-color: #ef4444 !important;
+        }
+
+        @keyframes shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            25% {
+                transform: translateX(-5px);
+            }
+
+            50% {
+                transform: translateX(5px);
+            }
+
+            75% {
+                transform: translateX(-5px);
+            }
+        }
+
+        .stats-card {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%2394a3b8' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            appearance: none;
+        }
+
+        .countdown-pulse {
+            animation: pulse-grow 0.5s ease-out;
+        }
+
+        @keyframes pulse-grow {
+            0% {
+                transform: scale(0.5);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+                opacity: 1;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Toggle styling */
+        .difficulty-btn.active {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.5);
+        }
+    </style>
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="app" class="w-full max-w-md">
+        <div class="mb-2">
+            <a href="index.htm"
+                class="text-[10px] text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-widest font-bold">
+                ← Back to Hub
+            </a>
+        </div>
+
+        <!-- Settings Header -->
+        <div class="flex items-center gap-2 mb-3">
+            <div class="flex-[1.2] flex bg-slate-800 p-1 rounded-xl border border-slate-700 h-10">
+                <button id="diff-easy"
+                    class="difficulty-btn flex-1 text-[10px] font-bold rounded-lg transition-all text-slate-400">EASY
+                    (9)</button>
+                <button id="diff-standard"
+                    class="difficulty-btn active flex-1 text-[10px] font-bold rounded-lg transition-all text-slate-400">STD
+                    (25)</button>
+            </div>
+            <div class="flex-1">
+                <select id="mode-select"
+                    class="w-full h-10 bg-slate-800 border border-slate-700 text-white rounded-xl px-2 text-[10px] font-bold focus:ring-2 focus:ring-blue-500 outline-none transition-all cursor-pointer">
+                    <option value="sequential">SEQUENTIAL</option>
+                    <option value="odd">ODD NUMBERS</option>
+                    <option value="even">EVEN NUMBERS</option>
+                    <option value="prime">PRIMES</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+            <h1
+                class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-emerald-400 mb-0">
+                SPEED NUMBER
+            </h1>
+            <p id="mode-description" class="text-slate-500 text-[10px] uppercase font-bold tracking-wider">Find numbers
+                in sequence!</p>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-card rounded-2xl p-3 mb-4 flex justify-between items-center">
+            <div>
+                <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Target</p>
+                <p id="next-num" class="text-xl font-black text-blue-400 leading-tight">--</p>
+            </div>
+            <div class="text-center">
+                <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Time</p>
+                <p id="timer" class="text-2xl font-mono font-bold text-white leading-tight">0.00s</p>
+            </div>
+            <div class="text-right">
+                <p class="text-[9px] uppercase tracking-widest text-slate-500 font-bold">Best</p>
+                <p id="best-time" class="text-xl font-bold text-emerald-400 leading-tight">--</p>
+            </div>
+        </div>
+
+        <!-- Game Board Container -->
+        <div class="relative">
+            <div id="grid"
+                class="number-grid bg-slate-800/50 p-2 rounded-2xl shadow-2xl border border-slate-700 grid-5">
+                <!-- Numbers injected here -->
+            </div>
+
+            <!-- Overlay for Start and Countdown -->
+            <div id="overlay"
+                class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-900/95 rounded-2xl backdrop-blur-md transition-all duration-300">
+                <div id="countdown-display" class="hidden text-7xl font-black text-white mb-4"></div>
+                <div id="menu-content" class="flex flex-col items-center">
+                    <h2 id="overlay-title" class="text-xl font-bold mb-4">Ready?</h2>
+                    <button id="start-btn"
+                        class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold rounded-xl shadow-lg shadow-blue-900/40 transition-all hover:scale-105 active:scale-95">
+                        START GAME
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="w-full bg-slate-800 h-1.5 rounded-full mt-4 overflow-hidden">
+            <div id="progress"
+                class="bg-gradient-to-r from-blue-500 to-emerald-500 h-full w-0 transition-all duration-300"></div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gridSize = 25;
+        let currentSequence = [];
+        let nextIndex = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let bestTimes = {
+            easy: { sequential: Infinity, odd: Infinity, even: Infinity, prime: Infinity },
+            standard: { sequential: Infinity, odd: Infinity, even: Infinity, prime: Infinity }
+        };
+        let isGameRunning = false;
+        let isCountingDown = false;
+
+        // Sequence Generators
+        const generators = {
+            sequential: (size) => Array.from({ length: size }, (_, i) => i + 1),
+            odd: (size) => Array.from({ length: size }, (_, i) => (i * 2) + 1),
+            even: (size) => Array.from({ length: size }, (_, i) => (i * 2) + 2),
+            prime: (size) => {
+                const primes = [];
+                let n = 2;
+                while (primes.length < size) {
+                    if (isPrime(n)) primes.push(n);
+                    n++;
+                }
+                return primes;
+            }
+        };
+
+        function isPrime(num) {
+            for (let i = 2, s = Math.sqrt(num); i <= s; i++)
+                if (num % i === 0) return false;
+            return num > 1;
+        }
+
+        // Audio System
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playTone(freq, type = 'sine', duration = 0.1, volume = 0.1) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.00001, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch (e) { }
+        }
+
+        const sounds = {
+            tick: () => playTone(440, 'sine', 0.1, 0.1),
+            go: () => {
+                playTone(523.25, 'triangle', 0.3, 0.15);
+                setTimeout(() => playTone(659.25, 'triangle', 0.3, 0.1), 50);
+                setTimeout(() => playTone(783.99, 'triangle', 0.5, 0.1), 100);
+            },
+            correct: (idx) => playTone(300 + (idx * 30), 'sine', 0.2, 0.15),
+            wrong: () => playTone(150, 'sawtooth', 0.3, 0.1),
+            win: () => {
+                [600, 800, 1000, 1200].forEach((f, i) => {
+                    setTimeout(() => playTone(f, 'square', 0.4, 0.05), i * 100);
+                });
+            }
+        };
+
+        // DOM Elements
+        const gridEl = document.getElementById('grid');
+        const nextNumEl = document.getElementById('next-num');
+        const timerEl = document.getElementById('timer');
+        const bestTimeEl = document.getElementById('best-time');
+        const overlayEl = document.getElementById('overlay');
+        const overlayTitleEl = document.getElementById('overlay-title');
+        const menuContent = document.getElementById('menu-content');
+        const countdownDisplay = document.getElementById('countdown-display');
+        const startBtn = document.getElementById('start-btn');
+        const progressEl = document.getElementById('progress');
+        const modeSelect = document.getElementById('mode-select');
+        const modeDesc = document.getElementById('mode-description');
+        const diffEasyBtn = document.getElementById('diff-easy');
+        const diffStandardBtn = document.getElementById('diff-standard');
+
+        function initBoard() {
+            const mode = modeSelect.value;
+            currentSequence = generators[mode](gridSize);
+            nextIndex = 0;
+
+            const shuffled = [...currentSequence];
+            shuffle(shuffled);
+
+            // Set grid class
+            gridEl.className = `number-grid bg-slate-800/50 p-3 rounded-2xl shadow-2xl border border-slate-700 ${gridSize === 9 ? 'grid-3' : 'grid-5'}`;
+
+            gridEl.innerHTML = '';
+            shuffled.forEach(num => {
+                const btn = document.createElement('button');
+                btn.className = `number-btn rounded-xl flex items-center justify-center bg-slate-700 hover:bg-slate-600 text-white shadow-md border-b-4 border-slate-900 transition-all ${gridSize === 9 ? 'text-4xl' : 'text-xl sm:text-2xl'}`;
+                btn.textContent = num;
+
+                const hue = (num * 137.5) % 360;
+                btn.style.color = `hsl(${hue}, 80%, 80%)`;
+
+                btn.onclick = () => handleNumberClick(num, btn);
+                gridEl.appendChild(btn);
+            });
+
+            nextNumEl.textContent = currentSequence[0];
+            updateBestDisplay();
+        }
+
+        function shuffle(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        }
+
+        function handleNumberClick(num, btnEl) {
+            if (!isGameRunning || isCountingDown) return;
+
+            if (num === currentSequence[nextIndex]) {
+                sounds.correct(nextIndex);
+                btnEl.classList.add('correct');
+                nextIndex++;
+
+                const percent = (nextIndex / gridSize) * 100;
+                progressEl.style.width = `${percent}%`;
+
+                if (nextIndex >= gridSize) {
+                    winGame();
+                } else {
+                    nextNumEl.textContent = currentSequence[nextIndex];
+                }
+            } else {
+                sounds.wrong();
+                btnEl.classList.add('wrong');
+                setTimeout(() => btnEl.classList.remove('wrong'), 400);
+            }
+        }
+
+        async function startCountdown() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+
+            isCountingDown = true;
+            menuContent.classList.add('hidden');
+            countdownDisplay.classList.remove('hidden');
+
+            initBoard();
+
+            const counts = ['3', '2', '1', 'GO!'];
+            for (let i = 0; i < counts.length; i++) {
+                countdownDisplay.textContent = counts[i];
+                countdownDisplay.classList.remove('countdown-pulse');
+                void countdownDisplay.offsetWidth;
+                countdownDisplay.classList.add('countdown-pulse');
+
+                if (i < counts.length - 1) {
+                    sounds.tick();
+                } else {
+                    sounds.go();
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 800));
+            }
+
+            startGame();
+        }
+
+        function startGame() {
+            isGameRunning = true;
+            isCountingDown = false;
+            overlayEl.style.opacity = '0';
+            setTimeout(() => {
+                overlayEl.style.display = 'none';
+                countdownDisplay.classList.add('hidden');
+            }, 300);
+
+            progressEl.style.width = '0%';
+            timerEl.textContent = '0.00s';
+
+            startTime = Date.now();
+            timerInterval = setInterval(() => {
+                const elapsed = (Date.now() - startTime) / 1000;
+                timerEl.textContent = elapsed.toFixed(2) + 's';
+            }, 10);
+        }
+
+        function winGame() {
+            isGameRunning = false;
+            clearInterval(timerInterval);
+            sounds.win();
+
+            const diff = gridSize === 9 ? 'easy' : 'standard';
+            const mode = modeSelect.value;
+            const finalTime = parseFloat(timerEl.textContent);
+            if (finalTime < bestTimes[diff][mode]) {
+                bestTimes[diff][mode] = finalTime;
+                updateBestDisplay();
+            }
+
+            overlayTitleEl.innerHTML = `<span class="text-emerald-400">Fantastic!</span><br><span class="text-white text-4xl">${finalTime.toFixed(2)}s</span>`;
+            startBtn.textContent = 'PLAY AGAIN';
+            menuContent.classList.remove('hidden');
+            overlayEl.style.display = 'flex';
+            setTimeout(() => overlayEl.style.opacity = '1', 10);
+        }
+
+        function updateBestDisplay() {
+            const diff = gridSize === 9 ? 'easy' : 'standard';
+            const mode = modeSelect.value;
+            const best = bestTimes[diff][mode];
+            bestTimeEl.textContent = best === Infinity ? '--' : best.toFixed(2) + 's';
+        }
+
+        function resetToMenu() {
+            if (isGameRunning || isCountingDown) {
+                clearInterval(timerInterval);
+                isGameRunning = false;
+                isCountingDown = false;
+            }
+            overlayTitleEl.textContent = 'Ready?';
+            startBtn.textContent = 'START GAME';
+            menuContent.classList.remove('hidden');
+            countdownDisplay.classList.add('hidden');
+            overlayEl.style.display = 'flex';
+            overlayEl.style.opacity = '1';
+
+            const diffName = gridSize === 9 ? "the first 9" : "the first 25";
+            const descriptions = {
+                sequential: `Find numbers 1 to ${gridSize} in order.`,
+                odd: `Find ${diffName} odd numbers.`,
+                even: `Find ${diffName} even numbers.`,
+                prime: `Find ${diffName} prime numbers.`
+            };
+            modeDesc.textContent = descriptions[modeSelect.value];
+            initBoard();
+        }
+
+        modeSelect.onchange = resetToMenu;
+
+        diffEasyBtn.onclick = () => {
+            gridSize = 9;
+            diffEasyBtn.classList.add('active');
+            diffStandardBtn.classList.remove('active');
+            resetToMenu();
+        };
+
+        diffStandardBtn.onclick = () => {
+            gridSize = 25;
+            diffStandardBtn.classList.add('active');
+            diffEasyBtn.classList.remove('active');
+            resetToMenu();
+        };
+
+        startBtn.onclick = startCountdown;
+
+        initBoard();
+    </script>
+</body>
+
+</html>

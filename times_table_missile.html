@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Cyber Star Defender</title>
+    <style>
+        :root {
+            --bg-color: #050505;
+            --ground-color: #00f2ff;
+            --accent-color: #bc13fe;
+            --danger-color: #ff0055;
+            --btn-color: #1a1a1a;
+            --neon-cyan: #00f2ff;
+            --neon-pink: #ff0055;
+            --neon-purple: #bc13fe;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: #fff;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
+            touch-action: none;
+        }
+
+        #game-wrapper {
+            position: relative;
+            width: 100%;
+            max-width: 500px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            padding: 5px;
+            height: 100vh;
+            justify-content: center;
+            box-sizing: border-box;
+        }
+
+        canvas {
+            background: #000;
+            border: 2px solid var(--neon-cyan);
+            border-radius: 10px;
+            box-shadow: 0 0 15px var(--neon-cyan);
+            width: 100%;
+            height: auto;
+            max-height: 45vh;
+            object-fit: contain;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 10px;
+            font-size: 1.1rem;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        #feedback-text {
+            height: 1.2em;
+            text-align: center;
+            font-size: 1.2rem;
+            color: var(--neon-pink);
+            margin: 2px 0;
+            font-weight: bold;
+            text-shadow: 0 0 10px var(--neon-pink);
+        }
+
+        .controls {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            width: 100%;
+        }
+
+        .answer-btn {
+            background: var(--btn-color);
+            color: var(--neon-cyan);
+            border: 2px solid var(--neon-cyan);
+            padding: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: inset 0 0 5px var(--neon-cyan);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .answer-btn:active {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        .answer-btn.wrong {
+            border-color: var(--neon-pink);
+            color: var(--neon-pink);
+            box-shadow: inset 0 0 10px var(--neon-pink);
+        }
+
+        .modal {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #111;
+            border: 3px solid var(--neon-purple);
+            color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 0 50px var(--neon-purple);
+            z-index: 100;
+            width: 80%;
+        }
+
+        .modal h2 {
+            margin-top: 0;
+            color: var(--neon-purple);
+            text-transform: uppercase;
+        }
+
+        .modal button {
+            background: transparent;
+            color: var(--neon-cyan);
+            border: 2px solid var(--neon-cyan);
+            padding: 10px 20px;
+            font-size: 1.2rem;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 15px;
+        }
+
+        .stars-container {
+            color: var(--neon-pink);
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--neon-cyan);
+            text-decoration: none;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 5px var(--neon-cyan);
+            text-transform: uppercase;
+            border: 1px solid transparent;
+            padding: 5px 10px;
+        }
+
+        .back-link:hover {
+            color: var(--neon-purple);
+            text-shadow: 0 0 10px var(--neon-purple);
+            border-color: var(--neon-purple);
+            box-shadow: 0 0 10px var(--neon-purple);
+        }
+
+        @media (max-width: 600px) {
+            .back-link {
+                top: 10px;
+                left: 10px;
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <a href="index.htm" class="back-link">« back to hub</a>
+
+    <div id="game-wrapper">
+        <div class="stats-bar">
+            <div id="score-display">SYS: 0/20</div>
+            <select id="table-select" onchange="resetGame()"
+                style="background: #111; color: var(--neon-cyan); border: 1px solid var(--neon-cyan); padding: 2px 5px; font-family: inherit; font-size: 0.9rem; border-radius: 4px; outline: none; cursor: pointer;">
+                <option value="all">ALL</option>
+                <option value="2">2x Table</option>
+                <option value="3">3x Table</option>
+                <option value="4">4x Table</option>
+                <option value="5" selected>5x Table</option>
+                <option value="6">6x Table</option>
+                <option value="7">7x Table</option>
+                <option value="8">8x Table</option>
+                <option value="9">9x Table</option>
+                <option value="10">10x Table</option>
+                <option value="11">11x Table</option>
+                <option value="12">12x Table</option>
+            </select>
+            <div class="stars-container" id="lives-display"></div>
+        </div>
+
+        <div id="feedback-text">INITIALIZING...</div>
+
+        <canvas id="gameCanvas"></canvas>
+
+        <div class="controls" id="answer-grid">
+            <button class="answer-btn" onclick="checkAnswer(0)">?</button>
+            <button class="answer-btn" onclick="checkAnswer(1)">?</button>
+            <button class="answer-btn" onclick="checkAnswer(2)">?</button>
+            <button class="answer-btn" onclick="checkAnswer(3)">?</button>
+        </div>
+
+        <div id="end-modal" class="modal" style="display: none;">
+            <h2 id="modal-title">TERMINATED</h2>
+            <p id="modal-desc">Simulation complete.</p>
+            <button onclick="resetGame()">REBOOT</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const feedbackText = document.getElementById('feedback-text');
+        const scoreDisplay = document.getElementById('score-display');
+        const livesDisplay = document.getElementById('lives-display');
+        const answerButtons = document.querySelectorAll('.answer-btn');
+        const endModal = document.getElementById('end-modal');
+
+        // Audio Context Setup
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playSound(type) {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            if (type === 'drop') {
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(1000, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(200, audioCtx.currentTime + 4);
+                gain.gain.setValueAtTime(0, audioCtx.currentTime);
+                gain.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.1);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 4);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 4);
+            } else if (type === 'shoot') {
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, audioCtx.currentTime + 0.3);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.3);
+            } else if (type === 'hit') {
+                osc.type = 'square';
+                osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.2);
+                gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.2);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.2);
+            } else if (type === 'lose') {
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(100, audioCtx.currentTime);
+                osc.frequency.linearRampToValueAtTime(20, audioCtx.currentTime + 0.5);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.5);
+            } else if (type === 'worldEnd') {
+                // Deep Rumbling Explosion
+                const duration = 3.0;
+
+                // Noise for the blast
+                const bufferSize = audioCtx.sampleRate * duration;
+                const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+                const noise = audioCtx.createBufferSource();
+                noise.buffer = buffer;
+                const noiseFilter = audioCtx.createBiquadFilter();
+                noiseFilter.type = 'lowpass';
+                noiseFilter.frequency.setValueAtTime(800, audioCtx.currentTime);
+                noiseFilter.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + duration);
+
+                const noiseGain = audioCtx.createGain();
+                noiseGain.gain.setValueAtTime(0.5, audioCtx.currentTime);
+                noiseGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+                noise.connect(noiseFilter);
+                noiseFilter.connect(noiseGain);
+                noiseGain.connect(audioCtx.destination);
+
+                // Low Rumble Osc
+                const rumble = audioCtx.createOscillator();
+                const rumbleGain = audioCtx.createGain();
+                rumble.type = 'sawtooth';
+                rumble.frequency.setValueAtTime(60, audioCtx.currentTime);
+                rumble.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + duration);
+
+                rumbleGain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                rumbleGain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+
+                rumble.connect(rumbleGain);
+                rumbleGain.connect(audioCtx.destination);
+
+                noise.start();
+                rumble.start();
+                noise.stop(audioCtx.currentTime + duration);
+                rumble.stop(audioCtx.currentTime + duration);
+            }
+        }
+
+        const CANVAS_WIDTH = 400;
+        const CANVAS_HEIGHT = 420;
+        canvas.width = CANVAS_WIDTH;
+        canvas.height = CANVAS_HEIGHT;
+
+        let gameState = {
+            score: 0,
+            lives: 3,
+            currentMissile: null,
+            interceptors: [],
+            particles: [],
+            gameActive: false,
+            questionsCount: 0,
+            maxQuestions: 20,
+            baseSpeed: 1.3,
+            currentAnswers: [],
+            city: [],
+            isTargeted: false
+        };
+
+        function generateCity() {
+            gameState.city = [];
+            for (let i = 0; i < 15; i++) {
+                gameState.city.push({
+                    x: i * 30,
+                    w: Math.random() * 20 + 15,
+                    h: Math.random() * 60 + 20,
+                    windows: Math.floor(Math.random() * 5)
+                });
+            }
+        }
+
+        class Particle {
+            constructor(x, y, color) {
+                this.x = x; this.y = y; this.color = color;
+                this.size = Math.random() * 4 + 1;
+                this.vx = (Math.random() - 0.5) * 10;
+                this.vy = (Math.random() - 0.5) * 10;
+                this.alpha = 1;
+            }
+            update() { this.x += this.vx; this.y += this.vy; this.alpha -= 0.03; }
+            draw() {
+                ctx.globalAlpha = this.alpha;
+                ctx.fillStyle = this.color;
+                ctx.fillRect(this.x, this.y, this.size, this.size);
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        class Interceptor {
+            constructor(startX, startY, target) {
+                this.x = startX;
+                this.y = startY;
+                this.target = target;
+                this.speed = 10;
+                this.dead = false;
+            }
+            update() {
+                const dx = this.target.x - this.x;
+                const dy = this.target.y - this.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 20) {
+                    this.dead = true;
+                    handleImpact();
+                    return;
+                }
+
+                this.x += (dx / dist) * this.speed;
+                this.y += (dy / dist) * this.speed;
+            }
+            draw() {
+                ctx.shadowBlur = 10;
+                ctx.shadowColor = 'var(--neon-purple)';
+                ctx.fillStyle = '#fff';
+                ctx.fillRect(this.x - 3, this.y - 3, 6, 6);
+
+                // Pulse tail
+                ctx.strokeStyle = 'var(--neon-purple)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(this.x, this.y);
+                ctx.lineTo(this.x, this.y + 15);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        class Missile {
+            constructor(a, b, speed) {
+                this.answer = a * b;
+                this.text = `${a} × ${b}`;
+                this.x = Math.random() * (CANVAS_WIDTH - 80) + 40;
+                this.y = -40;
+                this.speed = speed;
+                playSound('drop');
+            }
+            update() { this.y += this.speed; }
+            draw() {
+                ctx.shadowBlur = 15;
+                ctx.shadowColor = 'var(--neon-cyan)';
+                ctx.strokeStyle = 'rgba(0, 242, 255, 0.4)';
+                ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(this.x, this.y); ctx.lineTo(this.x, this.y - 60); ctx.stroke();
+                ctx.fillStyle = '#000';
+                ctx.strokeStyle = '#00f2ff';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(this.x - 40, this.y - 20, 80, 40);
+                ctx.fillRect(this.x - 40, this.y - 20, 80, 40);
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#00f2ff';
+                ctx.font = 'bold 20px "Courier New"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(this.text, this.x, this.y);
+            }
+        }
+
+        function spawnMissile() {
+            if (gameState.questionsCount >= gameState.maxQuestions) {
+                endGame(true);
+                return;
+            }
+
+            const selectedTable = document.getElementById('table-select').value;
+            let a, b;
+
+            if (selectedTable === 'all') {
+                a = Math.floor(Math.random() * 11) + 2;
+            } else {
+                a = parseInt(selectedTable);
+            }
+            b = Math.floor(Math.random() * 12) + 1;
+
+            const speed = gameState.baseSpeed + (gameState.score * 0.08);
+            gameState.currentMissile = new Missile(a, b, speed);
+            gameState.questionsCount++;
+            gameState.isTargeted = false;
+
+            let answers = [gameState.currentMissile.answer];
+            while (answers.length < 4) {
+                let wrong;
+                if (selectedTable === 'all') {
+                    wrong = (Math.floor(Math.random() * 11) + 2) * (Math.floor(Math.random() * 12) + 1);
+                } else {
+                    wrong = a * (Math.floor(Math.random() * 12) + 1);
+                }
+                if (!answers.includes(wrong) && wrong !== 0) answers.push(wrong);
+            }
+            gameState.currentAnswers = answers.sort(() => Math.random() - 0.5);
+            updateUI();
+        }
+
+        function updateUI() {
+            scoreDisplay.innerText = `SYS: ${gameState.score}/${gameState.maxQuestions}`;
+            livesDisplay.innerHTML = 'CORE: ' + '⚡'.repeat(gameState.lives);
+            gameState.currentAnswers.forEach((ans, i) => {
+                answerButtons[i].innerText = ans;
+                answerButtons[i].className = 'answer-btn';
+            });
+        }
+
+        function checkAnswer(index) {
+            initAudio();
+            if (!gameState.gameActive || !gameState.currentMissile || gameState.isTargeted) return;
+
+            if (gameState.currentAnswers[index] === gameState.currentMissile.answer) {
+                gameState.isTargeted = true;
+                playSound('shoot');
+                // Launch from a random building top
+                const b = gameState.city[Math.floor(gameState.city.length / 2)];
+                gameState.interceptors.push(new Interceptor(b.x + b.w / 2, CANVAS_HEIGHT - 30 - b.h, gameState.currentMissile));
+                feedbackText.innerText = "LOCKED ON";
+                feedbackText.style.color = "var(--neon-purple)";
+            } else {
+                feedbackText.innerText = "ERROR: WRONG DATA";
+                feedbackText.style.color = "var(--neon-pink)";
+                answerButtons[index].classList.add('wrong');
+            }
+        }
+
+        function handleImpact() {
+            if (!gameState.currentMissile) return;
+            playSound('hit');
+            for (let i = 0; i < 20; i++) gameState.particles.push(new Particle(gameState.currentMissile.x, gameState.currentMissile.y, '#bc13fe'));
+            gameState.score++;
+            gameState.currentMissile = null;
+            gameState.interceptors = [];
+            feedbackText.innerText = "TARGET NEUTRALIZED";
+            feedbackText.style.color = "var(--neon-cyan)";
+            setTimeout(() => { if (gameState.gameActive) spawnMissile(); }, 600);
+        }
+
+        function drawCity() {
+            ctx.shadowBlur = 5;
+            ctx.shadowColor = "#bc13fe";
+            gameState.city.forEach(b => {
+                ctx.fillStyle = "#111";
+                ctx.strokeStyle = "#bc13fe";
+                ctx.lineWidth = 1;
+                const y = CANVAS_HEIGHT - 30 - b.h;
+                ctx.fillRect(b.x, y, b.w, b.h);
+                ctx.strokeRect(b.x, y, b.w, b.h);
+                ctx.fillStyle = "rgba(188, 19, 254, 0.3)";
+                for (let j = 0; j < b.windows; j++) ctx.fillRect(b.x + 5, y + 10 + (j * 10), b.w - 10, 5);
+            });
+            ctx.strokeStyle = "#00f2ff";
+            ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(0, CANVAS_HEIGHT - 30); ctx.lineTo(CANVAS_WIDTH, CANVAS_HEIGHT - 30); ctx.stroke();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#050505';
+            ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+            // Background Grid
+            ctx.strokeStyle = 'rgba(0, 242, 255, 0.05)';
+            for (let i = 0; i < CANVAS_WIDTH; i += 40) { ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, CANVAS_HEIGHT); ctx.stroke(); }
+            for (let i = 0; i < CANVAS_HEIGHT; i += 40) { ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(CANVAS_WIDTH, i); ctx.stroke(); }
+
+            drawCity();
+
+            if (gameState.currentMissile) {
+                gameState.currentMissile.update();
+                gameState.currentMissile.draw();
+                if (gameState.currentMissile.y > CANVAS_HEIGHT - 50) {
+                    playSound('lose');
+                    gameState.lives--;
+                    feedbackText.innerText = "SYSTEM BREACH!";
+                    gameState.currentMissile = null;
+                    gameState.interceptors = [];
+                    if (gameState.lives <= 0) endGame(false);
+                    else setTimeout(() => { if (gameState.gameActive) spawnMissile(); }, 800);
+                }
+            }
+
+            gameState.interceptors.forEach((inc, i) => {
+                inc.update(); inc.draw();
+                if (inc.dead) gameState.interceptors.splice(i, 1);
+            });
+
+            gameState.particles.forEach((p, i) => {
+                p.update(); p.draw();
+                if (p.alpha <= 0) gameState.particles.splice(i, 1);
+            });
+
+            if (gameState.gameActive) requestAnimationFrame(draw);
+        }
+
+        function endGame(win) {
+            gameState.gameActive = false;
+            if (!win) playSound('worldEnd');
+            endModal.style.display = 'block';
+            document.getElementById('modal-title').innerText = win ? "ACCESS GRANTED" : "SYSTEM FAILURE";
+        }
+
+        function resetGame() {
+            initAudio();
+            generateCity();
+            gameState.score = 0; gameState.lives = 3; gameState.questionsCount = 0;
+            gameState.gameActive = true; gameState.currentMissile = null; gameState.interceptors = [];
+            endModal.style.display = 'none';
+            feedbackText.innerText = "READY FOR UPLINK";
+            spawnMissile();
+            draw();
+        }
+
+        // Initialize layout but wait for user to start for audio
+        generateCity();
+        draw();
+        endModal.style.display = 'block';
+        document.getElementById('modal-title').innerText = "SYSTEM ONLINE";
+        document.getElementById('modal-desc').innerText = "Missile defense system initialized.";
+        document.querySelector('#end-modal button').innerText = "START MISSION";
+    </script>
+</body>
+
+</html>

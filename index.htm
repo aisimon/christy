@@ -29,25 +29,28 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 40px 20px;
+            padding: 20px 15px;
+            /* Reduced for mobile */
         }
 
         header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
         }
 
         h1 {
             color: var(--pink-dark);
-            font-size: 2.5rem;
+            font-size: 2rem;
+            /* Sized down for mobile */
             margin-bottom: 10px;
             font-weight: 900;
         }
 
         p {
             color: var(--text-main);
-            font-size: 1.1rem;
+            font-size: 1rem;
             opacity: 0.8;
+            margin: 0;
         }
 
         .hub-container {
@@ -61,16 +64,25 @@
             background: white;
             border: 4px solid var(--pink-primary);
             border-radius: 24px;
-            padding: 25px;
+            padding: 20px;
             text-decoration: none;
             color: inherit;
             display: flex;
-            align-items: center;
-            gap: 20px;
+            flex-direction: column;
+            /* Stack on mobile */
+            align-items: flex-start;
+            gap: 15px;
             box-shadow: var(--card-shadow);
             transition: all 0.2s ease;
             position: relative;
             overflow: hidden;
+        }
+
+        @media (min-width: 481px) {
+            .game-link {
+                flex-direction: row;
+                align-items: center;
+            }
         }
 
         .game-link:hover {
@@ -84,9 +96,9 @@
 
         .icon-box {
             background: var(--pink-primary);
-            width: 60px;
-            height: 60px;
-            border-radius: 18px;
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -94,20 +106,20 @@
         }
 
         .icon-box svg {
-            width: 35px;
-            height: 35px;
+            width: 30px;
+            height: 30px;
             fill: white;
         }
 
         .game-info h2 {
             margin: 0 0 5px 0;
             color: var(--pink-dark);
-            font-size: 1.4rem;
+            font-size: 1.25rem;
         }
 
         .game-info p {
             margin: 0;
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             line-height: 1.4;
         }
 

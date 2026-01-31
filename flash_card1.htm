@@ -29,7 +29,8 @@
             flex-direction: column;
             align-items: center;
             min-height: 100vh;
-            padding: 20px;
+            padding: 15px;
+            /* Reduced for mobile */
         }
 
         /* Top Navigation */
@@ -37,8 +38,31 @@
             width: 100%;
             max-width: 500px;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 20px;
+            padding: 0 5px;
+        }
+
+        .hub-btn {
+            color: var(--pink-dark);
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 2px solid var(--pink-primary);
+            box-shadow: 0 4px 0 var(--pink-primary);
+            transition: all 0.1s;
+        }
+
+        .hub-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 var(--pink-primary);
         }
 
         select {
@@ -46,13 +70,14 @@
             background-color: white;
             border: 2px solid var(--pink-primary);
             border-radius: 12px;
-            padding: 10px 20px;
-            font-size: 1rem;
+            padding: 8px 15px;
+            font-size: 0.9rem;
             color: var(--pink-dark);
             font-weight: bold;
             cursor: pointer;
             outline: none;
             box-shadow: 0 4px 0 var(--pink-primary);
+            max-width: 200px;
         }
 
         /* Progress Section */
@@ -134,11 +159,47 @@
             height: 30px;
         }
 
+        .stop-btn {
+            background: #ff4d4d;
+            border: none;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-bottom: 20px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 0 #cc0000;
+        }
+
+        .stop-btn:active {
+            transform: scale(0.95);
+        }
+
+        .stop-btn svg {
+            fill: white;
+            width: 30px;
+            height: 30px;
+        }
+
+        .audio-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
         .spanish-word {
             font-size: 2.8rem;
             font-weight: 800;
             color: var(--pink-dark);
             margin-bottom: 20px;
+            min-height: 3.5em;
+            /* Fixed space for multi-line support */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .english-box {
@@ -148,6 +209,11 @@
             opacity: 0;
             transform: translateY(10px);
             transition: all 0.3s ease;
+            min-height: 80px;
+            /* Consistent height for the English reveal box */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .english-box.revealed {
@@ -211,10 +277,82 @@
         .options {
             display: flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
+            gap: 12px;
+            font-size: 0.95rem;
             color: var(--pink-dark);
             font-weight: bold;
+            background: white;
+            padding: 10px 16px;
+            border-radius: 20px;
+            box-shadow: 0 4px 10px rgba(255, 133, 162, 0.1);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .options:active {
+            transform: scale(0.95);
+        }
+
+        /* Toggle Switch Styling */
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        input:checked+.slider {
+            background-color: var(--pink-primary);
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(20px);
+        }
+
+        /* Responsive Tweaks */
+        @media (max-height: 700px) {
+            .card-container {
+                height: 320px;
+                margin-bottom: 20px;
+            }
+
+            .spanish-word {
+                font-size: 2.2rem;
+            }
+
+            .header {
+                margin-bottom: 15px;
+            }
         }
 
         /* End Screen */
@@ -238,7 +376,8 @@
         }
 
         .scroll-table {
-            max-height: 250px;
+            max-height: 450px;
+            /* Made taller as requested */
             overflow-y: auto;
             border: 2px solid var(--orange-soft);
             border-radius: 16px;
@@ -302,9 +441,8 @@
 
     <div id="game-view">
         <div class="header">
-            <a href="index.htm"
-                style="position: absolute; left: 20px; top: 20px; color: var(--pink-dark); text-decoration: none; font-weight: bold; display: flex; align-items: center; gap: 5px;">
-                <svg viewBox="0 0 24 24" style="width: 24px; height: 24px; fill: currentColor;">
+            <a href="index.htm" class="hub-btn">
+                <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor;">
                     <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
                 </svg>
                 Hub
@@ -321,12 +459,19 @@
 
         <div class="card-container" onclick="handleCardClick()">
             <div class="card">
-                <button class="audio-btn" onclick="playAudio(event)">
-                    <svg viewBox="0 0 24 24">
-                        <path
-                            d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
-                    </svg>
-                </button>
+                <div class="audio-controls">
+                    <button class="audio-btn" onclick="playAudio(event)">
+                        <svg viewBox="0 0 24 24">
+                            <path
+                                d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z" />
+                        </svg>
+                    </button>
+                    <!-- <button class="stop-btn" onclick="stopAudio(event)">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M6 6h12v12H6z" />
+                        </svg>
+                    </button> -->
+                </div>
                 <div id="esWord" class="spanish-word">Hola</div>
                 <div id="enBox" class="english-box">
                     <div id="enWord" class="english-word">Hello</div>
@@ -341,13 +486,19 @@
                 <button id="nextBtn" class="btn-nav" onclick="changeCard(1)">Next</button>
             </div>
 
-            <div class="options-group" style="display: flex; gap: 20px;">
+            <div class="options-group" style="display: flex; flex-direction: column; gap: 12px; width: 100%;">
                 <label class="options">
-                    <input type="checkbox" id="shuffleToggle" onchange="initGame()">
+                    <div class="switch">
+                        <input type="checkbox" id="shuffleToggle" onchange="initGame()">
+                        <span class="slider"></span>
+                    </div>
                     Shuffle Cards
                 </label>
                 <label class="options">
-                    <input type="checkbox" id="autoPlayToggle" checked>
+                    <div class="switch">
+                        <input type="checkbox" id="autoPlayToggle" checked>
+                        <span class="slider"></span>
+                    </div>
                     Auto-play Audio
                 </label>
             </div>
@@ -419,15 +570,57 @@
             document.getElementById('enBox').classList.add('revealed');
         }
 
+        // Voice Management
+        let preferredVoice = null;
+
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length === 0) return;
+
+            // Priority: Paulina, then other female Spanish voices
+            let voice = voices.find(v => v.lang.startsWith('es') && v.name.toLowerCase().includes('paulina'));
+            if (!voice) {
+                voice = voices.find(v => {
+                    const isSpanish = v.lang.startsWith('es');
+                    const name = v.name.toLowerCase();
+                    const femaleNames = ['monica', 'helena', 'lucia', 'arantxa', 'maria', 'laura', 'juana', 'silvia', 'elena', 'female', 'google español'];
+                    return isSpanish && femaleNames.some(femaleName => name.includes(femaleName));
+                });
+            }
+            preferredVoice = voice;
+            if (preferredVoice) console.log("Voice loaded:", preferredVoice.name);
+        }
+
+        // Pre-load voices for the first speaking attempt
+        window.speechSynthesis.onvoiceschanged = loadVoices;
+        loadVoices();
+
         function playAudio(event) {
             if (event) event.stopPropagation();
+
+            // Cancel any ongoing speech to prevent stacking
+            window.speechSynthesis.cancel();
+
             const word = currentDeck[currentIndex].es;
 
-            // Web Speech API
             const utterance = new SpeechSynthesisUtterance(word);
             utterance.lang = 'es-ES';
-            utterance.rate = 0.9; // Slightly slower for kids
+            utterance.rate = 0.8;
+
+            // Ensure voice is loaded if it wasn't ready at startup
+            if (!preferredVoice) loadVoices();
+
+            if (preferredVoice) {
+                utterance.voice = preferredVoice;
+            }
+
+            // console.log("Speaking with voice:", preferredVoice ? preferredVoice.name : "Default System Voice");
             window.speechSynthesis.speak(utterance);
+        }
+
+        function stopAudio(event) {
+            if (event) event.stopPropagation();
+            window.speechSynthesis.cancel();
         }
 
         function changeCard(dir) {
@@ -440,8 +633,8 @@
             isRevealed = false;
             updateUI();
 
-            // Auto-play when going to next card
-            if (dir === 1 && document.getElementById('autoPlayToggle').checked) {
+            // Auto-play when moving between cards
+            if (document.getElementById('autoPlayToggle').checked) {
                 playAudio();
             }
         }

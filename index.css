@@ -142,6 +142,7 @@ p {
     padding: 8px 18px;
     border-radius: 50px;
     display: inline-flex;
+    align-items: baseline;
     gap: 12px;
     font-size: 0.85rem;
     color: var(--pink-dark);

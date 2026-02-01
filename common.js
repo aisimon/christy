@@ -71,6 +71,14 @@ const hubGames = [
         iconBg: "#f72585"
     },
     {
+        title: "Word Worm",
+        description: "Spell your way through school vocabulary in this Spanish adventure!",
+        badge: "New",
+        href: "wordworm.htm",
+        icon: '<path d="M19 5h-2V3H7v2H5c-1.1 0-2 .9-2 2v1c0 2.55 1.92 4.63 4.39 4.94A5.01 5.01 0 0011 15.9V19H7v2h10v-2h-4v-3.1c2.45-.39 4.39-2.47 4.39-4.94V7c0-1.1-.9-2-2-2zm-12 5V7h2v3c0 .55-.45 1-1 1s-1-.45-1-1zm10 0c0 .55-.45 1-1 1s-1-.45-1-1V7h2v3z" />',
+        iconBg: "#f43f5e"
+    },
+    {
         title: "Duck Math",
         description: "Quack your way through times tables in this fun math adventure!",
         badge: "Math",

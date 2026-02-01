@@ -389,25 +389,51 @@
 
         function loadVoices() {
             const voices = synth.getVoices();
-            preferredVoice = voices.find(v => v.name.includes('Paulina') && v.lang.startsWith('es'));
-            if (!preferredVoice) {
-                preferredVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Female') || v.name.includes('Monica') || v.name.includes('Helena')));
+            if (voices.length === 0) return;
+
+            const femaleNames = ['paulina', 'monica', 'helena', 'lucia', 'arantxa', 'maria', 'laura', 'juana', 'silvia', 'elena', 'female', 'google español'];
+            let voice = voices.find(v => v.lang.toLowerCase().includes('es') && v.name.toLowerCase().includes('paulina'));
+            if (!voice) {
+                voice = voices.find(v => v.lang.toLowerCase().includes('es') && v.name.toLowerCase().includes('monica'));
             }
-            if (!preferredVoice) preferredVoice = voices.find(v => v.lang.startsWith('es'));
+            if (!voice) {
+                voice = voices.find(v => {
+                    const isSpanish = v.lang.toLowerCase().includes('es');
+                    const name = v.name.toLowerCase();
+                    return isSpanish && femaleNames.some(femaleName => name.includes(femaleName));
+                });
+            }
+            if (!voice) voice = voices.find(v => v.lang.toLowerCase().includes('es'));
+
+            preferredVoice = voice;
+            if (preferredVoice) console.log("Voice loaded:", preferredVoice.name, preferredVoice.lang);
         }
 
-        if (speechSynthesis.onvoiceschanged !== undefined) {
-            speechSynthesis.onvoiceschanged = loadVoices;
-        }
+        synth.onvoiceschanged = loadVoices;
         loadVoices();
 
         function speak(text) {
-            if (synth.speaking) synth.cancel();
-            const utter = new SpeechSynthesisUtterance(text);
-            if (preferredVoice) utter.voice = preferredVoice;
-            else utter.lang = 'es-ES';
-            utter.rate = 0.95;
-            synth.speak(utter);
+            synth.cancel();
+
+            if (synth.paused) {
+                synth.resume();
+            }
+
+            setTimeout(() => {
+                const utter = new SpeechSynthesisUtterance(text);
+
+                if (!preferredVoice) loadVoices();
+
+                if (preferredVoice) {
+                    utter.voice = preferredVoice;
+                    utter.lang = preferredVoice.lang;
+                } else {
+                    utter.lang = 'es-ES';
+                }
+
+                utter.rate = 0.9;
+                synth.speak(utter);
+            }, 50);
         }
 
         function speakCurrent() {

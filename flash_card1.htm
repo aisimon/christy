@@ -577,18 +577,27 @@
             const voices = window.speechSynthesis.getVoices();
             if (voices.length === 0) return;
 
-            // Priority: Paulina, then other female Spanish voices
-            let voice = voices.find(v => v.lang.startsWith('es') && v.name.toLowerCase().includes('paulina'));
+            // Priority: Paulina (MX), then Monica (ES), then other female Spanish voices
+            const femaleNames = ['paulina', 'monica', 'helena', 'lucia', 'arantxa', 'maria', 'laura', 'juana', 'silvia', 'elena', 'female', 'google español'];
+
+            let voice = voices.find(v => v.lang.toLowerCase().includes('es') && v.name.toLowerCase().includes('paulina'));
+            if (!voice) {
+                voice = voices.find(v => v.lang.toLowerCase().includes('es') && v.name.toLowerCase().includes('monica'));
+            }
             if (!voice) {
                 voice = voices.find(v => {
-                    const isSpanish = v.lang.startsWith('es');
+                    const isSpanish = v.lang.toLowerCase().includes('es');
                     const name = v.name.toLowerCase();
-                    const femaleNames = ['monica', 'helena', 'lucia', 'arantxa', 'maria', 'laura', 'juana', 'silvia', 'elena', 'female', 'google español'];
                     return isSpanish && femaleNames.some(femaleName => name.includes(femaleName));
                 });
             }
+            // Fallback to any Spanish voice
+            if (!voice) {
+                voice = voices.find(v => v.lang.toLowerCase().includes('es'));
+            }
+
             preferredVoice = voice;
-            if (preferredVoice) console.log("Voice loaded:", preferredVoice.name);
+            if (preferredVoice) console.log("Voice loaded:", preferredVoice.name, preferredVoice.lang);
         }
 
         // Pre-load voices for the first speaking attempt
@@ -598,24 +607,39 @@
         function playAudio(event) {
             if (event) event.stopPropagation();
 
-            // Cancel any ongoing speech to prevent stacking
+            // Cancel any ongoing speech
             window.speechSynthesis.cancel();
 
-            const word = currentDeck[currentIndex].es;
-
-            const utterance = new SpeechSynthesisUtterance(word);
-            utterance.lang = 'es-ES';
-            utterance.rate = 0.8;
-
-            // Ensure voice is loaded if it wasn't ready at startup
-            if (!preferredVoice) loadVoices();
-
-            if (preferredVoice) {
-                utterance.voice = preferredVoice;
+            // On iOS, sometimes speech gets stuck in a paused state
+            if (window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
             }
 
-            // console.log("Speaking with voice:", preferredVoice ? preferredVoice.name : "Default System Voice");
-            window.speechSynthesis.speak(utterance);
+            // Small delay before starting new speech helps Safari/iOS stability
+            setTimeout(() => {
+                const word = currentDeck[currentIndex].es;
+                const utterance = new SpeechSynthesisUtterance(word);
+
+                // Ensure voice is loaded
+                if (!preferredVoice) loadVoices();
+
+                if (preferredVoice) {
+                    utterance.voice = preferredVoice;
+                    utterance.lang = preferredVoice.lang; // Match the voice's lang tag
+                } else {
+                    utterance.lang = 'es-ES'; // Default fallback
+                }
+
+                utterance.rate = 0.9; // Slightly faster for better naturalness on iOS
+                utterance.pitch = 1.0;
+
+                // iOS needs this to keep it active
+                utterance.onend = function () {
+                    // console.log('Speech finished');
+                };
+
+                window.speechSynthesis.speak(utterance);
+            }, 50);
         }
 
         function stopAudio(event) {

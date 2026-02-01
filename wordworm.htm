@@ -370,15 +370,50 @@
             }
         }
 
+        let preferredVoice = null;
+        function loadVoices() {
+            const voices = window.speechSynthesis.getVoices();
+            if (voices.length === 0) return;
+
+            const femaleNames = ['paulina', 'monica', 'helena', 'lucia', 'arantxa', 'maria', 'laura', 'juana', 'silvia', 'elena', 'female', 'google español'];
+            let voice = voices.find(v => v.lang.toLowerCase().includes('es') && v.name.toLowerCase().includes('paulina'));
+            if (!voice) {
+                voice = voices.find(v => v.lang.toLowerCase().includes('es') && v.name.toLowerCase().includes('monica'));
+            }
+            if (!voice) {
+                voice = voices.find(v => {
+                    const isSpanish = v.lang.toLowerCase().includes('es');
+                    const name = v.name.toLowerCase();
+                    return isSpanish && femaleNames.some(femaleName => name.includes(femaleName));
+                });
+            }
+            if (!voice) voice = voices.find(v => v.lang.toLowerCase().includes('es'));
+            preferredVoice = voice;
+        }
+
         function speakCurrentWord() {
             window.speechSynthesis.cancel();
-            const word = vocabulary[currentLevel].es;
-            const msg = new SpeechSynthesisUtterance(word);
-            msg.lang = 'es-ES';
-            const voices = window.speechSynthesis.getVoices();
-            const paulina = voices.find(v => v.name.includes('Paulina') || v.name.includes('Monica') || (v.lang.startsWith('es') && v.name.includes('Female')));
-            if (paulina) msg.voice = paulina;
-            window.speechSynthesis.speak(msg);
+
+            if (window.speechSynthesis.paused) {
+                window.speechSynthesis.resume();
+            }
+
+            setTimeout(() => {
+                const word = vocabulary[currentLevel].es;
+                const msg = new SpeechSynthesisUtterance(word);
+
+                if (!preferredVoice) loadVoices();
+
+                if (preferredVoice) {
+                    msg.voice = preferredVoice;
+                    msg.lang = preferredVoice.lang;
+                } else {
+                    msg.lang = 'es-ES';
+                }
+
+                msg.rate = 0.9;
+                window.speechSynthesis.speak(msg);
+            }, 50);
         }
 
         function loadLevel() {
@@ -518,7 +553,8 @@
         }
 
         window.onload = () => {
-            window.speechSynthesis.onvoiceschanged = () => { };
+            window.speechSynthesis.onvoiceschanged = loadVoices;
+            loadVoices();
             vocabulary = shuffle([...originalVocabulary]);
             loadLevel();
         };

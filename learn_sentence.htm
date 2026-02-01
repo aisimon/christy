@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <!-- Critical: Prevents user scaling on mobile to maintain game UI integrity -->
+    <meta name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>¡A Mí Me Gusta! - Spanish Game</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap');
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: #fff1f2;
+            /* Very light pink background */
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-user-select: none;
+            user-select: none;
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card-shadow {
+            box-shadow: 0 10px 25px -5px rgba(244, 63, 94, 0.1), 0 8px 10px -6px rgba(244, 63, 94, 0.1);
+        }
+
+        .btn-bounce:active {
+            transform: scale(0.95);
+        }
+
+        .word-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+            gap: 10px;
+        }
+
+        /* Custom scrollbar */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .custom-scroll::-webkit-scrollbar-track {
+            background: #ffe4e6;
+        }
+
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #fb7185;
+            border-radius: 10px;
+        }
+
+        /* Progress Bar Animation */
+        #progress-bar {
+            transition: width 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Correct Answer Visual Feedback */
+        @keyframes success-pop {
+            0% {
+                transform: scale(1);
+            }
+
+            50% {
+                transform: scale(1.05);
+                filter: brightness(1.1);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .success-animation {
+            animation: success-pop 0.4s ease-out;
+        }
+
+        /* Incorrect Answer Visual Feedback (Shake) */
+        @keyframes error-shake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20%,
+            60% {
+                transform: translateX(-8px);
+            }
+
+            40%,
+            80% {
+                transform: translateX(8px);
+            }
+        }
+
+        .error-animation {
+            animation: error-shake 0.4s ease-in-out;
+            border-color: #f43f5e !important;
+        }
+
+        @keyframes score-jump {
+            0% {
+                transform: translateY(0);
+            }
+
+            50% {
+                transform: translateY(-10px) scale(1.2);
+            }
+
+            100% {
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .score-boost {
+            animation: score-jump 0.5s ease-out;
+            color: #10b981 !important;
+        }
+
+        .hub-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #f72585;
+            text-decoration: none;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 0.9rem;
+            background: white;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 2px solid #ff85a2;
+            box-shadow: 0 4px 0 #ff85a2;
+            transition: all 0.1s;
+            z-index: 50;
+        }
+
+        .hub-btn:active {
+            transform: translateY(2px);
+            box-shadow: 0 2px 0 #ff85a2;
+        }
+    </style>
+</head>
+
+<body class="p-4 sm:p-8">
+
+    <!-- Header -->
+    <header class="w-full max-w-2xl mb-4 text-center">
+        <a href="index.htm" class="hub-btn">
+            <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: currentColor;">
+                <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
+            Hub
+        </a>
+        <h1 class="text-3xl font-bold text-rose-800 mb-1 text-pink-600">¡A Mí Me Gusta!</h1>
+        <p class="text-rose-500 font-medium">Warm up your Spanish skills</p>
+    </header>
+
+    <!-- Main Game Container -->
+    <main class="w-full max-w-2xl bg-white rounded-3xl p-5 sm:p-8 card-shadow border border-rose-100 relative">
+
+        <!-- Score & Mode Toggle -->
+        <div class="flex justify-between items-center mb-4">
+            <div class="flex space-x-2">
+                <button id="mode-flash"
+                    class="px-3 py-2 sm:px-4 rounded-full text-xs sm:text-sm font-semibold bg-rose-500 text-white transition-colors shadow-sm">Flashcards</button>
+                <button id="mode-build"
+                    class="px-3 py-2 sm:px-4 rounded-full text-xs sm:text-sm font-semibold bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors">Sentence
+                    Builder</button>
+            </div>
+            <div id="score-container"
+                class="text-rose-700 font-bold bg-amber-50 px-3 py-1 sm:px-4 rounded-lg border border-rose-200 transition-all duration-300 text-sm sm:text-base">
+                Puntos: <span id="score">0</span>
+            </div>
+        </div>
+
+        <!-- Progress Bar Section -->
+        <div class="w-full h-2 bg-rose-100 rounded-full mb-6 overflow-hidden">
+            <div id="progress-bar" class="h-full bg-gradient-to-r from-rose-400 to-pink-500 w-0"></div>
+        </div>
+
+        <!-- Mode 1: Flashcards -->
+        <div id="flashcard-view" class="space-y-6">
+            <div class="text-center py-8 sm:py-10 bg-gradient-to-br from-rose-50 to-pink-50 rounded-2xl border-2 border-dashed border-rose-200 relative group cursor-pointer transition-colors duration-300"
+                id="main-card">
+                <span id="category-label"
+                    class="absolute top-3 left-1/2 -translate-x-1/2 text-[10px] font-bold uppercase tracking-widest text-rose-400">Categoría</span>
+                <h2 id="display-es"
+                    class="text-3xl sm:text-4xl font-bold text-rose-900 mb-2 mt-4 transition-all duration-300 px-4">
+                    Cargando...</h2>
+                <p id="display-en" class="text-lg sm:text-xl text-rose-400 opacity-0 transition-opacity duration-300">
+                    Translation</p>
+
+                <div class="mt-4 sm:mt-6 flex justify-center space-x-4">
+                    <button onclick="speakCurrent()"
+                        class="p-3 bg-white rounded-full shadow-md hover:shadow-lg text-rose-500 btn-bounce transition-all border border-rose-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                        </svg>
+                    </button>
+                    <button onclick="toggleTranslation()"
+                        class="p-3 bg-white rounded-full shadow-md hover:shadow-lg text-amber-500 btn-bounce transition-all border border-amber-50">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                            stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129" />
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3" id="options-grid">
+                <!-- Answer buttons injected here -->
+            </div>
+
+            <!-- Navigation Bar -->
+            <div class="flex items-center justify-between pt-4 border-t border-rose-50">
+                <button id="btn-prev"
+                    class="flex items-center space-x-2 text-rose-400 hover:text-rose-600 disabled:opacity-30 disabled:cursor-not-allowed font-bold text-sm btn-bounce">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z"
+                            clip-rule="evenodd" />
+                    </svg>
+                    <span>Prev</span>
+                </button>
+                <div class="text-[10px] text-rose-300 uppercase tracking-widest font-bold">Navegación</div>
+                <button id="btn-next"
+                    class="flex items-center space-x-2 text-rose-500 hover:text-rose-700 font-bold text-sm btn-bounce">
+                    <span>Next</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd"
+                            d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z"
+                            clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <!-- Mode 2: Sentence Builder -->
+        <div id="builder-view" class="hidden space-y-6">
+            <div class="bg-pink-50 p-6 rounded-2xl border border-rose-100 min-h-[120px] flex flex-wrap items-center gap-2"
+                id="sentence-tray">
+                <p id="builder-placeholder" class="text-rose-300 italic">Start building a sentence...</p>
+            </div>
+
+            <div class="flex flex-col space-y-4">
+                <div class="flex justify-between items-center px-1">
+                    <span id="step-name" class="font-bold text-rose-800 text-sm sm:text-base">Step 1: Opinion</span>
+                    <span id="step-counter" class="text-xs text-rose-400 font-bold">1 / 5</span>
+                </div>
+
+                <div class="h-64 overflow-y-auto custom-scroll p-1" id="builder-choices">
+                    <!-- Choices for current step -->
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="reset-builder"
+                        class="flex-1 py-3 rounded-xl bg-rose-50 text-rose-600 font-bold hover:bg-rose-100 btn-bounce text-sm">Reset</button>
+                    <button id="speak-sentence"
+                        class="flex-1 py-3 rounded-xl bg-rose-500 text-white font-bold hover:bg-rose-600 btn-bounce disabled:opacity-50 shadow-md text-sm"
+                        disabled>Hear Sentence</button>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <footer class="mt-8 text-rose-300 text-[10px] sm:text-xs max-w-md text-center font-medium uppercase tracking-wider">
+        Swipe or tap to learn. Nav buttons to review.
+    </footer>
+
+    <script src="common.js"></script>
+    <script>
+        // Data Structure
+        const gameData = {
+            opinions: [
+                { es: "Mi asignatura favorita es", en: "My favourite subject is" },
+                { es: "Me gusta", en: "I like" },
+                { es: "Me encanta", en: "I love" },
+                { es: "No me gusta", en: "I don't like" },
+                { es: "Odio", en: "I hate" },
+                { es: "Detesto", en: "I detest" },
+                { es: "Se me da bien", en: "I am good at" },
+                { es: "No se me da bien", en: "I am weak in" }
+            ],
+            nouns: [
+                { es: "alemán", en: "German" }, { es: "dibujo", en: "art" },
+                { es: "francés", en: "French" }, { es: "español", en: "Spanish" },
+                { es: "inglés", en: "English" }, { es: "teatro", en: "drama" },
+                { es: "educación física", en: "PE" }, { es: "geografía", en: "geography" },
+                { es: "historia", en: "history" }, { es: "informática", en: "IT" },
+                { es: "música", en: "music" }, { es: "religión", en: "RE" },
+                { es: "tecnología", en: "DT" }, { es: "matemáticas", en: "maths" },
+                { es: "ciencias", en: "science" }
+            ],
+            conjunctions: [
+                { es: "porque", en: "because" },
+                { es: "dado que", en: "as / because" },
+                { es: "puesto que", en: "as / because" }
+            ],
+            phrases: [
+                { es: "es", en: "it is" },
+                { es: "lo encuentro", en: "I find it" },
+                { es: "pienso que", en: "I think that it's" },
+                { es: "en mi opinión es", en: "in my opinion it's" }
+            ],
+            adjectives: [
+                { es: "creativo", en: "creative" }, { es: "divertido", en: "fun" },
+                { es: "interesante", en: "interesting" }, { es: "emocionante", en: "exciting" },
+                { es: "estupendo", en: "awesome" }, { es: "fácil", en: "easy" },
+                { es: "fantástico", en: "fantastic" }, { es: "genial", en: "great" },
+                { es: "práctico", en: "practical" }, { es: "relajante", en: "relaxing" },
+                { es: "útil", en: "useful" }, { es: "aburrido", en: "boring" },
+                { es: "agotador", en: "tiring" }, { es: "difícil", en: "difficult" },
+                { es: "estúpido", en: "stupid" }, { es: "inútil", en: "useless" },
+                { es: "ridículo", en: "ridiculous" }, { es: "horrible", en: "horrible" },
+                { es: "terrible", en: "awful" }
+            ]
+        };
+
+        const allVocab = Object.values(gameData).flat();
+
+        // Game State
+        let currentScore = 0;
+        let currentItem = null;
+        let isFlashcardMode = true;
+        let builderStep = 0;
+        let builtSentence = [];
+        let sessionProgress = 0;
+        const PROGRESS_MAX = 10;
+
+        // Navigation State
+        let flashcardHistory = [];
+        let historyIndex = -1;
+
+        // DOM Elements
+        const displayEs = document.getElementById('display-es');
+        const displayEn = document.getElementById('display-en');
+        const optionsGrid = document.getElementById('options-grid');
+        const catLabel = document.getElementById('category-label');
+        const scoreEl = document.getElementById('score');
+        const scoreContainer = document.getElementById('score-container');
+        const progressBar = document.getElementById('progress-bar');
+        const mainCard = document.getElementById('main-card');
+        const btnNext = document.getElementById('btn-next');
+        const btnPrev = document.getElementById('btn-prev');
+
+        // Audio Procedural Synthesis
+        function playSfx(type) {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+
+                if (type === 'success') {
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(523.25, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.1);
+                    gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+                } else {
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+                    osc.frequency.exponentialRampToValueAtTime(70, audioCtx.currentTime + 0.2);
+                    gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                }
+
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + 0.4);
+            } catch (e) { }
+        }
+
+        // Speech Setup
+        const synth = window.speechSynthesis;
+        let preferredVoice = null;
+
+        function loadVoices() {
+            const voices = synth.getVoices();
+            preferredVoice = voices.find(v => v.name.includes('Paulina') && v.lang.startsWith('es'));
+            if (!preferredVoice) {
+                preferredVoice = voices.find(v => v.lang.startsWith('es') && (v.name.includes('Female') || v.name.includes('Monica') || v.name.includes('Helena')));
+            }
+            if (!preferredVoice) preferredVoice = voices.find(v => v.lang.startsWith('es'));
+        }
+
+        if (speechSynthesis.onvoiceschanged !== undefined) {
+            speechSynthesis.onvoiceschanged = loadVoices;
+        }
+        loadVoices();
+
+        function speak(text) {
+            if (synth.speaking) synth.cancel();
+            const utter = new SpeechSynthesisUtterance(text);
+            if (preferredVoice) utter.voice = preferredVoice;
+            else utter.lang = 'es-ES';
+            utter.rate = 0.95;
+            synth.speak(utter);
+        }
+
+        function speakCurrent() {
+            if (currentItem) speak(currentItem.es);
+        }
+
+        function updateProgress() {
+            sessionProgress++;
+            if (sessionProgress > PROGRESS_MAX) sessionProgress = 1;
+            const percent = (sessionProgress / PROGRESS_MAX) * 100;
+            progressBar.style.width = `${percent}%`;
+        }
+
+        // Flashcard Navigation
+        function nextQuestion(manual = false) {
+            mainCard.classList.remove('success-animation', 'error-animation');
+            displayEn.classList.add('opacity-0');
+
+            // If moving forward in history
+            if (historyIndex < flashcardHistory.length - 1) {
+                historyIndex++;
+                renderFlashcard(flashcardHistory[historyIndex]);
+            } else {
+                // Generate brand new
+                const keys = Object.keys(gameData);
+                const randomKey = keys[Math.floor(Math.random() * keys.length)];
+                const list = gameData[randomKey];
+                const newItem = list[Math.floor(Math.random() * list.length)];
+
+                // Add category metadata for rendering
+                const questionObj = {
+                    ...newItem,
+                    category: randomKey.replace(/([A-Z])/g, ' $1').trim()
+                };
+
+                flashcardHistory.push(questionObj);
+                historyIndex = flashcardHistory.length - 1;
+                renderFlashcard(questionObj);
+            }
+
+            btnPrev.disabled = historyIndex <= 0;
+            speakCurrent();
+        }
+
+        function prevQuestion() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                mainCard.classList.remove('success-animation', 'error-animation');
+                displayEn.classList.add('opacity-0');
+                renderFlashcard(flashcardHistory[historyIndex]);
+                btnPrev.disabled = historyIndex <= 0;
+                speakCurrent();
+            }
+        }
+
+        function renderFlashcard(item) {
+            currentItem = item;
+            catLabel.innerText = item.category;
+            displayEs.innerText = item.es;
+            displayEn.innerText = item.en;
+
+            // Options generator
+            const options = [item.en];
+            while (options.length < 4) {
+                const rand = allVocab[Math.floor(Math.random() * allVocab.length)].en;
+                if (!options.includes(rand)) options.push(rand);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            optionsGrid.innerHTML = '';
+            options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "p-4 bg-white border-2 border-rose-50 rounded-xl font-bold text-rose-700 hover:border-rose-300 hover:bg-rose-50 transition-all btn-bounce text-xs sm:text-sm shadow-sm";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(opt, btn);
+                optionsGrid.appendChild(btn);
+            });
+        }
+
+        function triggerSuccessVisuals() {
+            playSfx('success');
+            mainCard.classList.add('success-animation');
+            scoreContainer.classList.add('score-boost');
+            setTimeout(() => {
+                mainCard.classList.remove('success-animation');
+                scoreContainer.classList.remove('score-boost');
+            }, 600);
+        }
+
+        function checkAnswer(selected, btn) {
+            const buttons = optionsGrid.querySelectorAll('button');
+            buttons.forEach(b => b.disabled = true);
+
+            if (selected === currentItem.en) {
+                btn.classList.replace('border-rose-50', 'border-emerald-500');
+                btn.classList.add('bg-emerald-50', 'text-emerald-700');
+                currentScore += 10;
+                scoreEl.innerText = currentScore;
+                updateProgress();
+                triggerSuccessVisuals();
+                setTimeout(nextQuestion, 1200);
+            } else {
+                btn.classList.replace('border-rose-50', 'border-rose-500');
+                btn.classList.add('bg-rose-50', 'text-rose-700');
+                playSfx('error');
+                mainCard.classList.add('error-animation');
+                buttons.forEach(b => {
+                    if (b.innerText === currentItem.en) {
+                        b.classList.replace('border-rose-50', 'border-emerald-500');
+                        b.classList.add('bg-emerald-50', 'text-emerald-700');
+                    }
+                });
+                setTimeout(nextQuestion, 3000);
+            }
+        }
+
+        function toggleTranslation() {
+            displayEn.classList.toggle('opacity-0');
+        }
+
+        // Builder Logic
+        const builderSequence = [
+            { key: 'opinions', name: 'Step 1: Opinion' },
+            { key: 'nouns', name: 'Step 2: Subject' },
+            { key: 'conjunctions', name: 'Step 3: Connector' },
+            { key: 'phrases', name: 'Step 4: Viewpoint' },
+            { key: 'adjectives', name: 'Step 5: Feeling' }
+        ];
+
+        function resetBuilder() {
+            builderStep = 0;
+            builtSentence = [];
+            document.getElementById('sentence-tray').innerHTML = '<p id="builder-placeholder" class="text-rose-300 italic">Start building a sentence...</p>';
+            document.getElementById('speak-sentence').disabled = true;
+            updateBuilderUI();
+        }
+
+        function updateBuilderUI() {
+            const stepName = document.getElementById('step-name');
+            const stepCounter = document.getElementById('step-counter');
+            const choicesDiv = document.getElementById('builder-choices');
+
+            if (builderStep < builderSequence.length) {
+                const currentConfig = builderSequence[builderStep];
+                stepName.innerText = currentConfig.name;
+                stepCounter.innerText = `${builderStep + 1} / 5`;
+                choicesDiv.innerHTML = '';
+                const grid = document.createElement('div');
+                grid.className = "word-grid";
+                gameData[currentConfig.key].forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.className = "flex flex-col items-center justify-center p-3 bg-white border border-rose-100 rounded-xl text-center btn-bounce hover:bg-rose-50 hover:border-rose-300 transition-colors shadow-sm";
+                    btn.innerHTML = `<span class="font-bold text-rose-900 text-xs sm:text-sm">${item.es}</span><span class="text-[9px] text-rose-400 uppercase font-bold">${item.en}</span>`;
+                    btn.onclick = () => addToSentence(item);
+                    grid.appendChild(btn);
+                });
+                choicesDiv.appendChild(grid);
+            } else {
+                stepName.innerText = "¡Excelente! 🎉";
+                choicesDiv.innerHTML = '<div class="flex items-center justify-center h-full"><p class="text-rose-400 text-center font-bold text-sm">You built a complete sentence!</p></div>';
+                document.getElementById('speak-sentence').disabled = false;
+                playSfx('success');
+            }
+        }
+
+        function addToSentence(item) {
+            if (builderStep === 0) document.getElementById('sentence-tray').innerHTML = '';
+            builtSentence.push(item.es);
+            const badge = document.createElement('div');
+            badge.className = "bg-white border border-rose-200 px-3 py-2 rounded-lg text-rose-600 font-bold text-xs sm:text-sm shadow-sm animate-in fade-in zoom-in duration-300";
+            badge.innerText = item.es;
+            document.getElementById('sentence-tray').appendChild(badge);
+            speak(item.es);
+            builderStep++;
+            updateBuilderUI();
+        }
+
+        // Events
+        document.getElementById('mode-flash').onclick = () => {
+            isFlashcardMode = true;
+            document.getElementById('flashcard-view').classList.remove('hidden');
+            document.getElementById('builder-view').classList.add('hidden');
+            document.getElementById('mode-flash').className = "px-4 py-2 rounded-full text-sm font-semibold bg-rose-500 text-white shadow-sm";
+            document.getElementById('mode-build').className = "px-4 py-2 rounded-full text-sm font-semibold bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors";
+            if (flashcardHistory.length === 0) nextQuestion();
+        };
+
+        document.getElementById('mode-build').onclick = () => {
+            isFlashcardMode = false;
+            document.getElementById('flashcard-view').classList.add('hidden');
+            document.getElementById('builder-view').classList.remove('hidden');
+            document.getElementById('mode-build').className = "px-4 py-2 rounded-full text-sm font-semibold bg-rose-500 text-white shadow-sm";
+            document.getElementById('mode-flash').className = "px-4 py-2 rounded-full text-sm font-semibold bg-rose-50 text-rose-600 hover:bg-rose-100 transition-colors";
+            resetBuilder();
+        };
+
+        btnNext.onclick = () => nextQuestion(true);
+        btnPrev.onclick = prevQuestion;
+        document.getElementById('reset-builder').onclick = resetBuilder;
+        document.getElementById('speak-sentence').onclick = () => speak(builtSentence.join(' '));
+
+        window.onload = () => {
+            loadVoices();
+            nextQuestion();
+        };
+    </script>
+</body>
+
+</html>
